@@ -1,0 +1,54 @@
+version: '3.7'
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+    container_name: desafio-php8-container
+    volumes:
+      - .:/var/www/html
+    ports:
+      - "8080:80"
+    networks:
+      - brjnet
+    depends_on:
+      - db
+
+  db:
+    build:
+      context: .
+      dockerfile: Dockerfile.db
+    container_name: desafio-psql15-container
+    volumes:
+      - /media/borjovsky/workspace/psql-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    networks:
+      - brjnet
+
+  pgadmin4:
+    build:
+      context: .
+      dockerfile: Dockerfile.pgadmin4
+    container_name: desafio-pgadmin4-container
+    volumes:
+      - /media/borjovsky/workspace/pgadmin4_data:/var/lib/pgadmin4/storage
+      - /media/borjovsky/workspace/pgadmin4_sessions_data:/var/lib/pgadmin4/sessions
+    ports:
+      - "5050:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${DB_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${DB_PASSWORD}
+    networks:
+      - brjnet
+    depends_on:
+      - db
+
+networks:
+  brjnet:
+    driver: bridge

@@ -1,0 +1,15 @@
+FROM php:8.2-cli
+
+RUN apt-get update && apt-get install -y libpq-dev vim \
+    && docker-php-ext-install pdo pdo_pgsql
+
+#RUN docker-php-ext-configure pgsql -with-pgsql=/usr/local/pgsql
+
+RUN echo "extension=pgsql" >> /usr/local/etc/php/php.ini-development
+RUN echo "extension=pdo_pgsql" >> /usr/local/etc/php/php.ini-development
+
+WORKDIR /var/www/html
+
+EXPOSE 80
+
+CMD ["php", "-S", "0.0.0.0:80", "-t", "/var/www/html"]
