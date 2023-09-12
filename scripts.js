@@ -17,7 +17,15 @@ function buscaTodosOsUsuarios() {
                 registro.append($("<td>").text(usuario.email));
                 registro.append($("<td>").text(usuario.idade));
                 // ações
-                registro.append($("<td>").html("<button class='btn btn-warning'><i class='fa-solid fa-pencil' onclick='alteraUsuario()'></i></button>&nbsp;&nbsp;&nbsp;<button class='btn btn-danger'><i class='fa fa-trash' onclick='removeUsuario()'></i></button>"));
+                registro.append($("<td>").html(`
+                    <button class="btn btn-warning" onclick="alteraUsuario(this)">
+                        <i class="fa-solid fa-pencil"></i>
+                    </button>
+                        &nbsp;&nbsp;&nbsp;
+                    <button class="btn btn-danger" onclick="removeUsuario(this)">
+                        <i class="fa fa-trash"></i>
+                    </button>
+                `));
                 lista.append(registro);
             });
             $('#dados').DataTable();
@@ -55,6 +63,10 @@ function buscaUsuarioPorEmail(callback) {
         },
         dataType: "json",
         success: function(usuario) {
+            if (!usuario) {
+                callback(false);
+                return;
+            }
             console.table(usuario);
             $("#nome").val(usuario.nome);
             $("#idade").val(usuario.idade);
@@ -72,8 +84,9 @@ function criaUsuario() {
     const nome = $("#nome").val();
     const idade = $("#idade").val();
     const email = $("#email").val();
+    console.log(nome, idade, email);
     $.ajax({
-        type: "PUT",
+        type: "POST",
         url: "api.php",
         data: {
             acao: "criar",
@@ -91,11 +104,20 @@ function criaUsuario() {
     });
 }
 
-function alteraUsuario() {
-    const id = $("#id").val();
-    const nome = $("#nome").val();
-    const idade = $("#idade").val();
-    const email = $("#email").val();
+function alteraUsuario(el) {
+    const row = $(el).closest("tr");
+    const id = row.find("td:eq(0)").text();
+    const nome = row.find("td:eq(1)").text();
+    const email = row.find("td:eq(2)").text();
+    const idade = row.find("td:eq(3)").text();
+    $("#id").val(id);
+    $("#nome").val(nome);
+    $("#idade").val(idade);
+    $("#email").val(email);
+
+    $("button[type='submit']").text("Alterar");
+    $("button[type='submit']").removeClass("btn-primary");
+    $("button[type='submit']").addClass("btn-warning");
     $.ajax({
         type: "PATCH",
         url: "api.php",
@@ -113,8 +135,10 @@ function alteraUsuario() {
     });
 }
 
-function removeUsuario() {
-    const id = $("#id").val();
+function removeUsuario(el) {
+    const row = $(el).closest("tr");
+    const id = row.find("td:eq(0)").text();
+
     $.ajax({
         type: "DELETE",
         url: `api.php?id=${id}`,
@@ -124,7 +148,25 @@ function removeUsuario() {
     })
 }
 
+function camposPreenchidos() {
+    const name = $("#nome").val();
+    const email = $("#email").val();
+    const submitButton = $("button[type='submit']").get(0);
+
+    if (name.trim() !== "" && email.trim() !== "") {
+        submitButton.classList.remove("btn-secondary");
+        submitButton.classList.add("btn-success");
+        submitButton.removeAttribute("disabled");
+    } else {
+        submitButton.classList.remove("btn-success");
+        submitButton.classList.add("btn-secondary");
+        submitButton.setAttribute("disabled", "true");
+    }
+}
+
 $(document).ready(function(){
+    $("#nome").on("keyup", camposPreenchidos);
+    $("#email").on("keyup", camposPreenchidos);
     $('#usrForm').submit(function(e){
         e.preventDefault();
         buscaUsuarioPorEmail(function(userExists) {
@@ -140,4 +182,9 @@ $(document).ready(function(){
         });
     });
     buscaTodosOsUsuarios();
+    $("button[type='reset']").on("click", function() {
+        $("button[type='submit']").text("Criar");
+        $("button[type='submit']").removeClass("btn-warning");
+        $("button[type='submit']").addClass("btn-primary");
+    });
 });

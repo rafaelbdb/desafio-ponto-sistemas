@@ -24,6 +24,7 @@ $port = $env['DB_PORT'];
 $db = $env['DB_NAME'];
 $type = $env['DB_TYPE'];
 $user = $env['DB_USER'];
+$email = $env['DB_EMAIL'];
 $password = $env['DB_PASSWORD'];
 
 $dsn = "$type:host=$host;port=$port;dbname=$db;user=$user;password=$password;";
