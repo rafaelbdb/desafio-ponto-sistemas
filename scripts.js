@@ -6,7 +6,8 @@ function buscaTodosOsUsuarios() {
             acao: "buscar"
         },
         dataType: "json",
-        success: function(usuarios) {
+        success: function(response) {
+            const usuarios = response['resultado'];
             console.table(usuarios);
             const lista = $("#lista");
             lista.empty();
@@ -29,6 +30,8 @@ function buscaTodosOsUsuarios() {
                 lista.append(registro);
             });
             $('#dados').DataTable();
+        }, error: function(xhr, status, error) {
+            console.error(`buscaTodosOsUsuarios ==>>`, xhr.status, status, error);
         }
     });
 }
@@ -43,11 +46,14 @@ function buscaUsuarioPorId() {
             id: id
         },
         dataType: "json",
-        success: function(usuario) {
+        success: function(response) {
+            const usuario = response['resultado'];
             console.table(usuario);
             $("#nome").val(usuario.nome);
             $("#idade").val(usuario.idade);
             $("#email").val(usuario.email);
+        }, error: function(xhr, status, error) {
+            console.error('buscaUsuarioPorId ==>>', xhr.status, status, error);
         }
     });
 }
@@ -62,7 +68,8 @@ function buscaUsuarioPorEmail(callback) {
             email: email
         },
         dataType: "json",
-        success: function(usuario) {
+        success: function(response) {
+            const usuario = response['resultado'];
             if (!usuario) {
                 callback(false);
                 return;
@@ -72,9 +79,8 @@ function buscaUsuarioPorEmail(callback) {
             $("#idade").val(usuario.idade);
             $("#email").val(usuario.email);
             callback(true);
-        },
-        error: function(status, error) {
-            console.error("AJAX Error:", status, error);
+        }, error: function(xhr, status, error) {
+            console.error('buscaUsuarioPorEmail ==>>', xhr.status, status, error);
             callback(false);
         }
     });
@@ -95,11 +101,11 @@ function criaUsuario() {
             email: email
         },
         dataType: 'json',
-        success: function(usuarioCriado) {
+        success: function(response) {
+            const usuarioCriado = response['resultado'];
             console.log(usuarioCriado);
-        },
-        error: function(xhr, status, error) {
-            console.error("AJAX Error:", status, error);
+        }, error: function(xhr, status, error) {
+            console.error('criaUsuario ==>>', xhr.status, status, error);
         }
     });
 }
@@ -131,6 +137,8 @@ function alteraUsuario(el) {
         dataType: "json",
         success: function(response) {
             console.warn(response);
+        }, error: function(xhr, status, error) {
+            console.error('alteraUsuario ==>>', xhr.status, status, error);
         }
     });
 }
@@ -143,7 +151,9 @@ function removeUsuario(el) {
         type: "DELETE",
         url: `api.php?id=${id}`,
         success: function(response){
-            console.error(response);
+            console.warn(response);
+        }, error: function(xhr, status, error) {
+            console.error('removeUsuario ==>>', xhr.status, status, error);
         }
     })
 }
