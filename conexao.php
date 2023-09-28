@@ -10,7 +10,7 @@ class Conexao {
     private array $env;
     private int $port;
     private string $host, $db, $type, $user, $password;
-    public PDO $pdo;
+    public ?PDO $pdo;
     public string $dsn;
 
     /**
@@ -23,7 +23,7 @@ class Conexao {
     {
         $this->env = $this->parse_ini_file_multi('.env');
         $this->host = $this->env['DB_HOST'];
-        $this->port = $this->env['DB_PORT'];
+        $this->port = (int)$this->env['DB_PORT'];
         $this->db = $this->env['DB_NAME'];
         $this->type = $this->env['DB_TYPE'];
         $this->user = $this->env['DB_USER'];
@@ -57,7 +57,7 @@ class Conexao {
 
             return $envs;
         } catch (Exception $e) {
-            die("Error: ".$e->getMessage());
+            throw new Exception("Error: ".$e->getMessage());
         }
     }
 
@@ -73,7 +73,7 @@ class Conexao {
             $this->pdo = new PDO($this->dsn);
             $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         } catch (PDOException $e) {
-            die("Connection failed: ".$e->getMessage());
+            throw new Exception("Connection failed: ".$e->getMessage());
         }
     }
 
@@ -88,7 +88,7 @@ class Conexao {
         try {
             $this->pdo = null;
         } catch (PDOException $e) {
-            die("Connection failed: ".$e->getMessage());
+            throw new Exception("Connection failed: ".$e->getMessage());
         }
     }
 }
