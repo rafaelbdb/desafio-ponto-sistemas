@@ -10,8 +10,9 @@ class API
 {
     private Conexao $con;
     private PDO $pdo;
-    public string $acao, $nome, $email;
-    public int $id, $idade;
+    private string $acao;
+    public ?string $nome, $email;
+    public ?int $id, $idade;
 
     /**
      * Método construtor
@@ -24,35 +25,33 @@ class API
      * @param int $idade Idade do usuário
      * @return void
      */
-    function __construct($acao, $id, $nome, $email, $idade = null)
+    function __construct()
     {
-        if (!isset($acao)) {
-            return $this->retornaErro('Ação não informada!', 400);
+        $this->acao = $_REQUEST['acao'] ?? null;
+        $this->id = $_REQUEST['id'] ?? null;
+        $this->nome = $_REQUEST['nome'] ?? null;
+        $this->email = $_REQUEST['email'] ?? null;
+        $this->idade = $_REQUEST['idade'] ?? null;
+
+        if (!isset($this->acao)) {
+            throw new Exception('Ação não informada!', 400);
         }
 
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            return $this->retornaErro('Email inválido!', 400);
+        if ($this->email && !filter_var($this->email, FILTER_VALIDATE_EMAIL)) {
+            throw new Exception('Email inválido!', 400);
         }
 
-        if($idade != null && !is_numeric($idade)){
-            return $this->retornaErro('Idade inválida!', 400);
+        if($this->idade && !is_numeric($this->idade)){
+            throw new Exception('Idade inválida!', 400);
         }
-
-        $this->acao = $acao;
-        $this->id = $id;
-        $this->nome = $nome;
-        $this->email = $email;
-        $this->idade = $idade;
 
         try {
             $this->con = new Conexao();
             $this->pdo = $this->con->pdo;
         } catch (PDOException $e) {
-            $this->retornaErro('Falha na conexão: '.$e->getMessage(), 500);
-            die();
+            throw new Exception('Falha na conexão: '.$e->getMessage(), 500);
         } catch (Exception $e) {
-            $this->retornaErro('Erro: '.$e->getMessage(), 500);
-            die();
+            throw new Exception('Erro: '.$e->getMessage(), 500);
         }
     }
 
@@ -63,9 +62,11 @@ class API
      * @param int $tipo Código do erro
      * @return string JSON com o erro
      */
-    private function retornaErro($erro, $tipo = 400){
+    public function retornaErro($erro, $tipo = 400){
         http_response_code($tipo);
-        $this->con->fecha();
+        if($this->con) {
+            $this->con->fecha();
+        }
         return json_encode(['status' => 0, 'erro' => $erro]);
     }
 
@@ -247,8 +248,9 @@ class API
 }
 
 // Inicializa a API
-$api = new API($_REQUEST['acao'], $_REQUEST['id'], $_REQUEST['nome'], $_REQUEST['email'], $_REQUEST['idade']);
+$api = new API();
 
+//die(var_export($_POST));
 // Verifica o método de requisição
 switch ($_SERVER['REQUEST_METHOD']) {
     case 'DELETE':
@@ -264,23 +266,24 @@ switch ($_SERVER['REQUEST_METHOD']) {
             break;
             } else {
                 switch ($_POST['acao']) {
-                case 'criar':
-                    echo $api->criarUsuario();
-                    break;
-                case 'buscar':
-                    echo $api->buscarTodosOsUsuarios();
-                    break;
-                case 'buscarPorEmail':
-                    echo $api->buscaUsuarioPorEmail();
-                    break;
-                case 'buscarPorId':
-                    echo $api->buscaUsuarioPorID();
-                    break;
-                default:
-                    echo "Ação inválida!";
-                    break;
+                    case 'criar':
+                        echo $api->criarUsuario();
+                        break;
+                    case 'buscar':
+                        echo $api->buscarTodosOsUsuarios();
+                        break;
+                    case 'buscarPorEmail':
+                        echo $api->buscaUsuarioPorEmail();
+                        break;
+                    case 'buscarPorId':
+                        echo $api->buscaUsuarioPorID();
+                        break;
+                    default:
+                        echo "Ação inválida!";
+                        break;
                 }
             }
+        break;
     default:
         echo "Método de Requisição inválido!";
         break;
