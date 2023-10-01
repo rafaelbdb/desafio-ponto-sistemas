@@ -31,24 +31,23 @@ services:
     networks:
       - brjnet
 
-# USE O DBEAVER
-#   pgadmin4:
-#     build:
-#       context: .
-#       dockerfile: Dockerfile.pgadmin4
-#     container_name: desafio-pgadmin4-container
-#     volumes:
-#       - /media/borjovsky/workspace/pgadmin4_data:/var/lib/pgadmin4/storage
-#       - /media/borjovsky/workspace/pgadmin4_sessions_data:/var/lib/pgadmin4/sessions
-#     ports:
-#       - "5050:80"
-#     environment:
-#       PGADMIN_DEFAULT_EMAIL: ${DB_EMAIL}
-#       PGADMIN_DEFAULT_PASSWORD: ${DB_PASSWORD}
-#     networks:
-#       - brjnet
-#     depends_on:
-#       - db
+  pgadmin4:
+    build:
+      context: .
+      dockerfile: Dockerfile.pgadmin4
+    container_name: desafio-pgadmin4-container
+    volumes:
+      - /media/borjovsky/workspace/pgadmin4_data:/var/lib/pgadmin4/storage
+      - /media/borjovsky/workspace/pgadmin4_sessions_data:/var/lib/pgadmin4/sessions
+    ports:
+      - "5050:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${DB_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${DB_PASSWORD}
+    networks:
+      - brjnet
+    depends_on:
+      - db
 
 networks:
   brjnet:

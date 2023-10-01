@@ -11,7 +11,7 @@ class Conexao
 {
     private array $env;
     private int $port;
-    private string $host, $db, $type, $user, $password;
+    private string $host, $db, $type, $user, $email, $password;
     public ?PDO $pdo;
     public string $dsn;
 
@@ -29,6 +29,7 @@ class Conexao
         $this->db = $this->env['DB_NAME'];
         $this->type = $this->env['DB_TYPE'];
         $this->user = $this->env['DB_USER'];
+        $this->email = $this->env['DB_EMAIL'];
         $this->password = $this->env['DB_PASSWORD'];
         $this->dsn = "$this->type:host=$this->host;port=$this->port;dbname=$this->db;user=$this->user;password=$this->password;";
 

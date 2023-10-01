@@ -11,8 +11,8 @@ class API
     private Conexao $con;
     private PDO $pdo;
     public string $metodo;
-    public ?string $acao, $nome, $email;
-    public ?int $id, $idade;
+    public ?string $acao, $nome, $nascimento, $email;
+    public ?int $id;
 
     /**
      * Método construtor
@@ -22,7 +22,7 @@ class API
      * @param int $id ID do usuário
      * @param string $nome Nome do usuário
      * @param string $email Email do usuário
-     * @param int $idade Idade do usuário
+     * @param int $nascimento Nascimento do usuário
      * @return void
      */
     function __construct()
@@ -36,7 +36,7 @@ class API
             $this->id = $data->id ?? null;
             $this->nome = $data->nome ?? null;
             $this->email = $data->email ?? null;
-            $this->idade = $data->idade ?? null;
+            $this->nascimento = $data->nascimento ?? null;
         }
 
         if ($this->metodo == 'POST' && !isset($this->acao)) {
@@ -47,8 +47,8 @@ class API
             throw new Exception('Email inválido!', 400);
         }
 
-        if ($this->idade && !is_numeric($this->idade)) {
-            throw new Exception('Idade inválida!', 400);
+        if ($this->nascimento && !DateTime::createFromFormat('Y-m-d', $this->nascimento)) {
+            throw new Exception('Nascimento inválido!', 400);
         }
 
         try {
@@ -112,9 +112,9 @@ class API
             $sql = "INSERT INTO usuarios (nome, email";
             $params = [$this->nome, $this->email];
 
-            if ($this->idade) {
-                $sql .= ", idade";
-                $params[] = $this->idade;
+            if ($this->nascimento) {
+                $sql .= ", nascimento";
+                $params[] = $this->nascimento;
             }
 
             $sql .= ") VALUES (" . str_repeat("?, ", count($params) - 1) . "?)";
@@ -222,9 +222,9 @@ class API
             if (!$original['status']) {
                 return $this->retornaErro("Erro ao alterar o usuário: Usuário não encontrado!");
             }
-            $sql = "UPDATE usuarios SET nome = ?, idade = ?, email = ? WHERE id = ?";
+            $sql = "UPDATE usuarios SET nome = ?, nascimento = ?, email = ? WHERE id = ?";
             $stmt = $this->pdo->prepare($sql);
-            $alterado = $stmt->execute([$this->nome, $this->idade, $this->email, $this->id]);
+            $alterado = $stmt->execute([$this->nome, $this->nascimento, $this->email, $this->id]);
             $sucesso = $alterado && $stmt->rowCount() > 0;
         } catch (Exception $e) {
             return $this->retornaErro('Erro ao alterar usuário: ' . $e->getMessage(), 500);

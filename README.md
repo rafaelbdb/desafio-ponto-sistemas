@@ -77,6 +77,8 @@ OBS: ENVIAR UM BREVE TUTORIAL DE COMO INSTALAR / UTILIZAR A APLICAÇÃO
     -   DB_TYPE=pgsql
     -   DB_USER=<seu_usuario>
     -   DB_PASSWORD=<sua_senha>
+    -   DB_EMAIL=<seu_email>
+        > OBS: O email será seu login no PgAdmin4
 
 -   Instale o cURL:
 
