@@ -265,7 +265,6 @@ class API
 }
 
 $api = new API();
-
 switch ($api->metodo) {
     case 'DELETE':
         echo isset($api->id) ? $api->removerUsuario() : "ID não informado!";
