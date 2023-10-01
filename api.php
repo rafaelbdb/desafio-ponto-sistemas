@@ -268,7 +268,7 @@ $api = new API();
 
 switch ($api->metodo) {
     case 'DELETE':
-        echo isset($_REQUEST['id']) ? $api->removerUsuario() : "ID não informado!";
+        echo isset($api->id) ? $api->removerUsuario() : "ID não informado!";
         break;
     case 'PUT':
     case 'PATCH':

@@ -202,8 +202,8 @@ function alteraUsuario() {
 
 function removeUsuario(el) {
     try {
-        const row = $(el).closest("tr");
-        const id = row.find("td:eq(0)").text();
+        const id = $(el).closest("tr").find('td:first-child').text().trim();
+        console.info("removeUsuario ==>>", id);
         const data = {
             id: id
         };
