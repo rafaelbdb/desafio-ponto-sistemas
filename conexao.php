@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 /**
@@ -6,7 +7,8 @@ declare(strict_types=1);
  *
  * Gerencia a conexão com o banco de dados
  */
-class Conexao {
+class Conexao
+{
     private array $env;
     private int $port;
     private string $host, $db, $type, $user, $password;
@@ -40,7 +42,8 @@ class Conexao {
      * @return array Array com as variáveis do arquivo .env
      * @throws Exception Se o arquivo não existir
      */
-    private function parse_ini_file_multi($file) {
+    private function parse_ini_file_multi($file)
+    {
         try {
             $lines = file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
             $envs = array();
@@ -57,7 +60,7 @@ class Conexao {
 
             return $envs;
         } catch (Exception $e) {
-            throw new Exception("Error: ".$e->getMessage());
+            throw new Exception("Error: " . $e->getMessage());
         }
     }
 
@@ -68,12 +71,13 @@ class Conexao {
      * @throws PDOException Se a conexão falhar
      * @throws Exception Se a conexão falhar
      */
-    public function conecta(){
+    public function conecta()
+    {
         try {
             $this->pdo = new PDO($this->dsn);
             $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         } catch (PDOException $e) {
-            throw new Exception("Connection failed: ".$e->getMessage());
+            throw new Exception("Connection failed: " . $e->getMessage());
         }
     }
 
@@ -84,11 +88,12 @@ class Conexao {
      * @throws PDOException Se a conexão falhar
      * @throws Exception Se a conexão falhar
      */
-    public function fecha(){
+    public function fecha()
+    {
         try {
             $this->pdo = null;
         } catch (PDOException $e) {
-            throw new Exception("Connection failed: ".$e->getMessage());
+            throw new Exception("Connection failed: " . $e->getMessage());
         }
     }
 }

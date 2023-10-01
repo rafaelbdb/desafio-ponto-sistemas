@@ -6,13 +6,13 @@ require_once('conexao.php');
  *
  * Gerencia as requisições da API
  */
-class API 
+class API
 {
     private Conexao $con;
     private PDO $pdo;
-    private string $acao;
-    public ?string $nome, $email;
-    public ?int $id, $idade;
+    public string $metodo;
+    private ?string $acao, $nome, $email;
+    private ?int $id, $idade;
 
     /**
      * Método construtor
@@ -27,13 +27,16 @@ class API
      */
     function __construct()
     {
+        $this->metodo = $_SERVER['REQUEST_METHOD'];
         $this->acao = $_REQUEST['acao'] ?? null;
         $this->id = $_REQUEST['id'] ?? null;
         $this->nome = $_REQUEST['nome'] ?? null;
         $this->email = $_REQUEST['email'] ?? null;
         $this->idade = $_REQUEST['idade'] ?? null;
 
-        if (!isset($this->acao)) {
+        // die(var_export($_SERVER['REQUEST_METHOD']));
+        // die(var_export($_REQUEST));
+        if ($this->metodo != 'DELETE' && !isset($this->acao)) {
             throw new Exception('Ação não informada!', 400);
         }
 
@@ -41,7 +44,7 @@ class API
             throw new Exception('Email inválido!', 400);
         }
 
-        if($this->idade && !is_numeric($this->idade)){
+        if ($this->idade && !is_numeric($this->idade)) {
             throw new Exception('Idade inválida!', 400);
         }
 
@@ -49,9 +52,9 @@ class API
             $this->con = new Conexao();
             $this->pdo = $this->con->pdo;
         } catch (PDOException $e) {
-            throw new Exception('Falha na conexão: '.$e->getMessage(), 500);
+            throw new Exception('Falha na conexão: ' . $e->getMessage(), 500);
         } catch (Exception $e) {
-            throw new Exception('Erro: '.$e->getMessage(), 500);
+            throw new Exception('Erro: ' . $e->getMessage(), 500);
         }
     }
 
@@ -62,9 +65,10 @@ class API
      * @param int $tipo Código do erro
      * @return string JSON com o erro
      */
-    public function retornaErro($erro, $tipo = 400){
+    public function retornaErro($erro, $tipo = 400)
+    {
         http_response_code($tipo);
-        if($this->con) {
+        if ($this->con) {
             $this->con->fecha();
         }
         return json_encode(['status' => 0, 'erro' => $erro]);
@@ -77,7 +81,8 @@ class API
      * @param int $tipo Código do sucesso
      * @return string JSON com o sucesso
      */
-    private function retornaSucesso($resultado, $tipo = 200){
+    private function retornaSucesso($resultado, $tipo = 200)
+    {
         http_response_code($tipo);
         $this->con->fecha();
         return json_encode(['status' => 1, 'resultado' => $resultado]);
@@ -95,8 +100,10 @@ class API
         $sucesso = false;
         try {
             $original = $this->buscaUsuarioPorEmail();
-            if(json_decode($original)){
-                return $this->retornaErro("Erro ao criar usuário: Já existe um usuário com o email '{$original['email']}'");
+            $original = json_decode($original, true);
+            $email = $original['resultado']['email'] ?? null;
+            if ($email) {
+                return $this->retornaErro("Erro ao criar usuário: Já existe um usuário com o email '{$email}'");
             }
 
             $sql = "INSERT INTO usuarios (nome, email";
@@ -107,17 +114,17 @@ class API
                 $params[] = $this->idade;
             }
 
-            $sql .= ") VALUES (".str_repeat("?, ", count($params) - 1)."?)";
+            $sql .= ") VALUES (" . str_repeat("?, ", count($params) - 1) . "?)";
 
             $stmt = $this->pdo->prepare($sql);
             $sucesso = $stmt->execute($params);
         } catch (Exception $e) {
-            return $this->retornaErro('Erro ao criar usuário: '.$e->getMessage(), 500);
+            return $this->retornaErro('Erro ao criar usuário: ' . $e->getMessage(), 500);
         } finally {
             $this->con->fecha();
         }
 
-        return $sucesso ? $this->retornaSucesso('Usuário criado com sucesso!', 201) : $this->retornaErro('Erro ao criar usuário: '.$stmt->errorInfo()[2]);
+        return $sucesso ? $this->retornaSucesso('Usuário criado com sucesso!', 201) : $this->retornaErro('Erro ao criar usuário: ' . $stmt->errorInfo()[2]);
     }
 
     /**
@@ -127,7 +134,8 @@ class API
      * @throws PDOException Se a conexão falhar
      * @throws Exception Se a conexão falhar
      */
-    public function buscarTodosOsUsuarios(){
+    public function buscarTodosOsUsuarios()
+    {
         $sucesso = false;
         try {
             $sql = "SELECT * FROM usuarios";
@@ -136,7 +144,7 @@ class API
 
             $sucesso = count($usuarios) > 0;
         } catch (Exception $e) {
-            return $this->retornaErro('Erro ao buscar usuários: '.$e->getMessage(), 500);
+            return $this->retornaErro('Erro ao buscar usuários: ' . $e->getMessage(), 500);
         } finally {
             $this->con->fecha();
         }
@@ -151,7 +159,8 @@ class API
      * @throws PDOException Se a conexão falhar
      * @throws Exception Se a conexão falhar
      */
-    function buscaUsuarioPorID(){
+    public function buscaUsuarioPorID()
+    {
         $sucesso = false;
         try {
             $sql = "SELECT * FROM usuarios WHERE id=?";
@@ -161,7 +170,7 @@ class API
 
             $sucesso = $ex && $usuario != null;
         } catch (Exception $e) {
-            return $this->retornaErro('Erro ao buscar usuário: '.$e->getMessage(), 500);
+            return $this->retornaErro('Erro ao buscar usuário: ' . $e->getMessage(), 500);
         } finally {
             $this->con->fecha();
         }
@@ -176,7 +185,8 @@ class API
      * @throws PDOException Se a conexão falhar
      * @throws Exception Se a conexão falhar
      */
-    function buscaUsuarioPorEmail(){
+    public function buscaUsuarioPorEmail()
+    {
         $sucesso = false;
         try {
             $sql = "SELECT * FROM usuarios WHERE email=?";
@@ -185,7 +195,7 @@ class API
             $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
             $sucesso = $ex && $usuario != null;
         } catch (Exception $e) {
-            return $this->retornaErro('Erro ao buscar usuário: '.$e->getMessage(), 500);
+            return $this->retornaErro('Erro ao buscar usuário: ' . $e->getMessage(), 500);
         } finally {
             $this->con->fecha();
         }
@@ -200,11 +210,13 @@ class API
      * @throws PDOException Se a conexão falhar
      * @throws Exception Se a conexão falhar
      */
-    function alterarUsuario(){
+    public function alterarUsuario()
+    {
         $sucesso = false;
         try {
             $original = $this->buscaUsuarioPorID();
-            if(!json_decode($original)){
+            $original = json_decode($original, true);
+            if (!$original['status']) {
                 return $this->retornaErro("Erro ao alterar o usuário: Usuário não encontrado!");
             }
             $sql = "UPDATE usuarios SET nome = ?, idade = ?, email = ? WHERE id = ?";
@@ -212,12 +224,12 @@ class API
             $alterado = $stmt->execute([$this->nome, $this->idade, $this->email, $this->id]);
             $sucesso = $alterado && $stmt->rowCount() > 0;
         } catch (Exception $e) {
-            return $this->retornaErro('Erro ao alterar usuário: '.$e->getMessage(), 500);
+            return $this->retornaErro('Erro ao alterar usuário: ' . $e->getMessage(), 500);
         } finally {
             $this->con->fecha();
         }
 
-        return $sucesso ? $this->retornaSucesso('Usuário alterado com sucesso!') : $this->retornaErro('Erro ao alterar o usuário: '.$stmt->errorInfo()[2]);
+        return $sucesso ? $this->retornaSucesso('Usuário alterado com sucesso!') : $this->retornaErro('Erro ao alterar o usuário: ' . $stmt->errorInfo()[2]);
     }
 
     /**
@@ -227,23 +239,25 @@ class API
      * @throws PDOException Se a conexão falhar
      * @throws Exception Se a conexão falhar
      */
-    function removerUsuario() {
+    public function removerUsuario()
+    {
         $sucesso = false;
         try {
             $original = $this->buscaUsuarioPorID();
-            if(!json_decode($original)){
+            $original = json_decode($original, true);
+            if (!$original['status']) {
                 return $this->retornaErro("Erro ao remover o usuário: Usuário não encontrado!");
             }
             $sql = "DELETE FROM usuarios WHERE id=?";
             $stmt = $this->pdo->prepare($sql);
             $sucesso = $stmt->execute([$this->id]);
         } catch (Exception $e) {
-            return $this->retornaErro('Erro ao remover usuário: '.$e->getMessage(), 500);
+            return $this->retornaErro('Erro ao remover usuário: ' . $e->getMessage(), 500);
         } finally {
             $this->con->fecha();
         }
 
-        return $sucesso ? $this->retornaSucesso('Usuário removido com sucesso!') : $this->retornaErro('Erro ao remover o usuário: '.$stmt->errorInfo()[2]);
+        return $sucesso ? $this->retornaSucesso('Usuário removido com sucesso!') : $this->retornaErro('Erro ao remover o usuário: ' . $stmt->errorInfo()[2]);
     }
 }
 
@@ -252,7 +266,7 @@ $api = new API();
 
 //die(var_export($_POST));
 // Verifica o método de requisição
-switch ($_SERVER['REQUEST_METHOD']) {
+switch ($api->metodo) {
     case 'DELETE':
         echo isset($_REQUEST['id']) ? $api->removerUsuario() : "ID não informado!";
         break;
@@ -264,28 +278,27 @@ switch ($_SERVER['REQUEST_METHOD']) {
         if (!isset($_POST['acao'])) {
             echo "Ação não informada!";
             break;
-            } else {
-                switch ($_POST['acao']) {
-                    case 'criar':
-                        echo $api->criarUsuario();
-                        break;
-                    case 'buscar':
-                        echo $api->buscarTodosOsUsuarios();
-                        break;
-                    case 'buscarPorEmail':
-                        echo $api->buscaUsuarioPorEmail();
-                        break;
-                    case 'buscarPorId':
-                        echo $api->buscaUsuarioPorID();
-                        break;
-                    default:
-                        echo "Ação inválida!";
-                        break;
-                }
+        } else {
+            switch ($_POST['acao']) {
+                case 'criar':
+                    echo $api->criarUsuario();
+                    break;
+                case 'buscar':
+                    echo $api->buscarTodosOsUsuarios();
+                    break;
+                case 'buscarPorEmail':
+                    echo $api->buscaUsuarioPorEmail();
+                    break;
+                case 'buscarPorId':
+                    echo $api->buscaUsuarioPorID();
+                    break;
+                default:
+                    echo "Ação inválida!";
+                    break;
             }
+        }
         break;
     default:
         echo "Método de Requisição inválido!";
         break;
 }
-
