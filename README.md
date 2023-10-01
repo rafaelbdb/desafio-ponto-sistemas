@@ -77,6 +77,8 @@ OBS: ENVIAR UM BREVE TUTORIAL DE COMO INSTALAR / UTILIZAR A APLICAÇÃO
     -   DB_TYPE=pgsql
     -   DB_USER=<seu_usuario>
     -   DB_PASSWORD=<sua_senha>
+    -   DB_EMAIL=<seu_email>
+        > OBS: O email será seu login no PgAdmin4
 
 -   Instale o cURL:
 
@@ -97,6 +99,8 @@ OBS: ENVIAR UM BREVE TUTORIAL DE COMO INSTALAR / UTILIZAR A APLICAÇÃO
     ```bash
     $ docker-compose down --remove-orphans && clear && docker-compose up
     ```
+
+-   Na pasta 'banco' há um sql para recriar o banco e a tabela + triggers, e também um backup com alguns exemplos. Podem ser restaurados com o PgAdmin4.
 
 -   Abrir o projeto no navegador em 'http://localhost:8080'
 

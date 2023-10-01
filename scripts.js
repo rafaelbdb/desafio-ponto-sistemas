@@ -16,11 +16,14 @@ function buscaTodosOsUsuarios() {
                 const lista = $("#lista");
                 lista.empty();
                 $.each(usuarios, function (i, usuario) {
+                    const dataNascimento = moment(usuario.nascimento).locale('pt-br').format('DD/MM/YYYY');
+
                     const registro = $("<tr>");
                     registro.append($("<td>").text(usuario.id));
                     registro.append($("<td>").text(usuario.nome));
+                    registro.append($("<td>").text(dataNascimento));
                     registro.append($("<td>").text(usuario.email));
-                    registro.append($("<td>").text(usuario.idade));
+
                     // ações
                     registro.append($("<td>").html(`
                     <button class="btn btn-warning" onclick="editaUsuario(this)">
@@ -41,6 +44,7 @@ function buscaTodosOsUsuarios() {
                     },
                 });
             }, error: function (xhr, status, error) {
+                $("#lista").html("<tr><td colspan='5'>Nenhum usuário cadastrado</td></tr>");
                 console.error(`buscaTodosOsUsuarios ==>>`, xhr.status, status, error);
             }
         });
@@ -67,7 +71,7 @@ function buscaUsuarioPorId() {
                 const usuario = response.resultado;
                 console.table(usuario);
                 $("#nome").val(usuario.nome);
-                $("#idade").val(usuario.idade);
+                $("#nascimento").val(usuario.nascimento);
                 $("#email").val(usuario.email);
             }, error: function (xhr, status, error) {
                 console.error('buscaUsuarioPorId ==>>', xhr.status, status, error);
@@ -99,10 +103,7 @@ function buscaUsuarioPorEmail(callback) {
                     return;
                 }
                 console.table(usuario);
-                $("#nome").val(usuario.nome);
-                $("#idade").val(usuario.idade);
-                $("#email").val(usuario.email);
-                callback(true);
+                callback(usuario);
             }, error: function (xhr, status, error) {
                 console.error('buscaUsuarioPorEmail ==>>', xhr.status, status, error);
                 callback(false);
@@ -117,13 +118,13 @@ function buscaUsuarioPorEmail(callback) {
 function criaUsuario() {
     try {
         const nome = $("#nome").val();
-        const idade = $("#idade").val();
+        const nascimento = $("#nascimento").val();
         const email = $("#email").val();
-        console.log(nome, idade, email);
+        console.log(nome, nascimento, email);
         const data = {
             acao: "criar",
             nome: nome,
-            idade: idade,
+            nascimento: nascimento,
             email: email
         };
         $.ajax({
@@ -151,33 +152,35 @@ function editaUsuario(el) {
         const row = $(el).closest("tr");
         const id = row.find("td:eq(0)").text();
         const nome = row.find("td:eq(1)").text();
-        const email = row.find("td:eq(2)").text();
-        const idade = row.find("td:eq(3)").text();
+        const nascimento = row.find("td:eq(2)").text();
+        const email = row.find("td:eq(3)").text();
+        const dataFormatada = moment(nascimento, 'DD/MM/YYYY').format('YYYY-MM-DD');
+
         $("#usrid").val(id);
         $("#nome").val(nome);
-        $("#idade").val(idade);
+        $("#nascimento").val(dataFormatada);
         $("#email").val(email);
 
-        $("button[type='submit']").text("Alterar");
-        $("button[type='submit']").attr("onclick", `alteraUsuario()`);
-        $("button[type='submit']").removeClass("btn-outline-success");
-        $("button[type='submit']").addClass("btn-outline-warning");
+        $("#enviar").text("Alterar");
+        $("#enviar").removeClass("btn-outline-success");
+        $("#enviar").addClass("btn-outline-warning");
     } catch (error) {
         console.error("editaUsuario ==>>", error);
         throw new Error(error);
     }
 }
 
-function alteraUsuario() {
+function alteraUsuario(confirma) {
     try {
+        if (!confirma) return;
         const id = $("#usrid").val();
         const nome = $("#nome").val();
-        const idade = $("#idade").val();
+        const nascimento = $("#nascimento").val();
         const email = $("#email").val();
         const data = {
             id: id,
             nome: nome,
-            idade: idade,
+            nascimento: nascimento,
             email: email
         };
 
@@ -202,27 +205,63 @@ function alteraUsuario() {
 
 function removeUsuario(el) {
     try {
-        const id = $(el).closest("tr").find('td:first-child').text().trim();
-        console.info("removeUsuario ==>>", id);
-        const data = {
-            id: id
-        };
+        const nome = $(el).closest("tr").find('td:nth-child(2)').text().trim();
+        $.confirm({
+            title: 'Remover Usuário',
+            content: `Confirma REMOVER usuário '${nome}'?`,
+            buttons: {
+                confirm: {
+                    text: 'Sim',
+                    btnClass: 'btn-primary',
+                    keys: ['enter'],
+                    action: function () {
+                        const id = $(el).closest("tr").find('td:first-child').text().trim();
+                        console.info("removeUsuario ==>>", id);
+                        const data = {
+                            id: id
+                        };
 
-        $.ajax({
-            type: "DELETE",
-            url: "api.php",
-            data: JSON.stringify(data),
-            contentType: "application/json",
-            dataType: "json",
-            success: function (response) {
-                console.warn(response.resultado);
-                window.location.reload();
-            }, error: function (xhr, status, error) {
-                console.error('removeUsuario ==>>', xhr.status, status, error);
+                        $.ajax({
+                            type: "DELETE",
+                            url: "api.php",
+                            data: JSON.stringify(data),
+                            contentType: "application/json",
+                            dataType: "json",
+                            success: function (response) {
+                                console.warn(response.resultado);
+                                window.location.reload();
+                            }, error: function (xhr, status, error) {
+                                console.error('removeUsuario ==>>', xhr.status, status, error);
+                            }
+                        })
+                    }
+                },
+                cancel: {
+                    text: 'Não',
+                    btnClass: 'btn-danger',
+                    keys: ['esc'],
+                    action: function () {
+                        console.error('Cancelado!');
+                    }
+                }
             }
-        })
+        });
     } catch (error) {
         console.error("removeUsuario ==>>", error);
+        throw new Error(error);
+    }
+}
+
+function removeClassesBtnEnviar() {
+    try {
+        $('#enviar').removeClass(function (index, className) {
+            return (className.match(/\S+/g) || []).filter(function (cls) {
+                return cls.startsWith('btn-');
+            }).join(' ');
+        });
+        $('#enviar').removeClass("disabled");
+    } catch (error) {
+        console.error("removeClasses ==>>", error);
         throw new Error(error);
     }
 }
@@ -231,16 +270,15 @@ function camposPreenchidos() {
     try {
         const name = $("#nome").val();
         const email = $("#email").val();
-        const submitButton = $("button[type='submit']").get(0);
-        const color = (submitButton.innerText === "Criar") ? "success" : "warning";
+        const tipo = $('#enviar').innerText;
+        const color = (tipo === "Criar") ? "success" : "warning";
         if (name.trim() !== "" && email.trim() !== "") {
-            submitButton.classList.remove(`btn-outline-${color}`);
-            submitButton.classList.remove("disabled");
-            submitButton.classList.add(`btn-${color}`);
+            removeClassesBtnEnviar();
+            $('#enviar').addClass(`btn-${color}`);
         } else {
-            submitButton.classList.remove(`btn-${color}`);
-            submitButton.classList.add(`btn-outline-${color}`);
-            submitButton.classList.add("disabled");
+            removeClassesBtnEnviar();
+            $('#enviar').addClass(`btn-outline-${color}`);
+            $('#enviar').addClass("disabled");
         }
     } catch (error) {
         console.error("camposPreenchidos ==>>", error);
@@ -251,23 +289,42 @@ function camposPreenchidos() {
 $(document).ready(function () {
     $("#nome").on("keyup", camposPreenchidos);
     $("#email").on("keyup", camposPreenchidos);
+    buscaTodosOsUsuarios();
+    $("#limpar").on("click", function () {
+        $("#enviar").text("Criar");
+        removeClassesBtnEnviar();
+        $("#enviar").addClass("btn-outline-success");
+        $("#enviar").addClass("disabled");
+    });
     $('#usrForm').submit(function (e) {
         e.preventDefault();
-        buscaUsuarioPorEmail(function (userExists) {
-            if (userExists && $("button[type='submit']").text() === "Alterar") {
-                if (confirm("Confirma novos dados do usuário?") === true) {
-                    alteraUsuario(e);
-                }
+        buscaUsuarioPorEmail(function (usuario) {
+            if (usuario !== false && $("#enviar").text() === "Alterar") {
+                $.confirm({
+                    title: 'Editar Usuário',
+                    content: `Confirma novos dados do usuário '${usuario.nome}'?`,
+                    buttons: {
+                        confirm: {
+                            text: 'Sim',
+                            btnClass: 'btn-primary',
+                            keys: ['enter'],
+                            action: function () {
+                                alteraUsuario(true);
+                            }
+                        },
+                        cancel: {
+                            text: 'Não',
+                            btnClass: 'btn-danger',
+                            keys: ['esc'],
+                            action: function () {
+                                console.error('Cancelado!');
+                            }
+                        }
+                    }
+                });
             } else {
                 criaUsuario();
             }
-            window.location.reload();
         });
-    });
-    buscaTodosOsUsuarios();
-    $("button[type='reset']").on("click", function () {
-        $("button[type='submit']").text("Criar");
-        $("button[type='submit']").removeClass("btn-warning");
-        $("button[type='submit']").addClass("btn-primary");
     });
 });

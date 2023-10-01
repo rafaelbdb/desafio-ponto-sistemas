@@ -20,19 +20,14 @@
             rel="stylesheet"
             href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.css"
         />
-
-        <script
-            src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"
-            integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g=="
-            crossorigin="anonymous"
-            referrerpolicy="no-referrer"
-        ></script>
-        <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.js"></script>
-        <script src="scripts.js"></script>
+        <link
+            rel="stylesheet"
+            href="//cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.css"
+        />
         <title>Desafio Desenvolvedor PontoSistemas</title>
     </head>
     <body>
-        <input type="hidden" name="usrid" id="usrid">
+        <input type="hidden" name="usrid" id="usrid" />
         <div id="container" name="container">
             <form action="api.php" method="POST" id="usrForm" name="usrForm">
                 <div class="mb-3">
@@ -48,14 +43,19 @@
                 </div>
                 <div class="mb-3">
                     <div class="d-flex">
-                        <div class="form-input" style="margin-right: 1rem; flex: 1;">
-                            <label for="idade" class="form-label">Idade</label>
+                        <div
+                            class="form-input"
+                            style="margin-right: 1rem; flex: 1;"
+                        >
+                            <label for="nascimento" class="form-label"
+                                >Nascimento</label
+                            >
                             <input
-                                type="number"
+                                type="date"
                                 class="form-control"
-                                id="idade"
-                                name="idade"
-                                placeholder="Idade"
+                                id="nascimento"
+                                name="nascimento"
+                                placeholder="Nascimento"
                             />
                         </div>
                         <div class="form-input" style="flex: 2;">
@@ -72,22 +72,51 @@
                     </div>
                 </div>
                 <div name="botoesForm" id="botoesForm">
-                    <button type="submit" class="btn btn-outline-success disabled" style="margin-right: 1rem;">
+                    <button
+                        type="submit"
+                        name="enviar"
+                        id="enviar"
+                        class="btn btn-outline-success disabled"
+                        style="margin-right: 1rem;"
+                    >
                         Criar
                     </button>
-                    <button type="reset" class="btn btn-info">Limpar</button>
+                    <button
+                        type="reset"
+                        name="limpar"
+                        id="limpar"
+                        class="btn btn-info"
+                    >
+                        Limpar
+                    </button>
                 </div>
             </form>
             <table id="dados" name="dados">
                 <thead>
                     <th>ID</th>
                     <th>Nome</th>
+                    <th>Nascimento</th>
                     <th>Email</th>
-                    <th>Idade</th>
                     <th>Ação</th>
                 </thead>
                 <tbody id="lista" name="lista"></tbody>
             </table>
         </div>
+
+        <script
+            src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"
+            integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g=="
+            crossorigin="anonymous"
+            referrerpolicy="no-referrer"
+        ></script>
+        <script src="//cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.js"></script>
+        <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.js"></script>
+        <script
+            src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment-with-locales.min.js"
+            integrity="sha512-42PE0rd+wZ2hNXftlM78BSehIGzezNeQuzihiBCvUEB3CVxHvsShF86wBWwQORNxNINlBPuq7rG4WWhNiTVHFg=="
+            crossorigin="anonymous"
+            referrerpolicy="no-referrer"
+        ></script>
+        <script src="scripts.js"></script>
     </body>
 </html>
