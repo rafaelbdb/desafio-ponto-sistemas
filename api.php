@@ -11,8 +11,8 @@ class API
     private Conexao $con;
     private PDO $pdo;
     public string $metodo;
-    private ?string $acao, $nome, $email;
-    private ?int $id, $idade;
+    public ?string $acao, $nome, $email;
+    public ?int $id, $idade;
 
     /**
      * Método construtor
@@ -28,15 +28,18 @@ class API
     function __construct()
     {
         $this->metodo = $_SERVER['REQUEST_METHOD'];
-        $this->acao = $_REQUEST['acao'] ?? null;
-        $this->id = $_REQUEST['id'] ?? null;
-        $this->nome = $_REQUEST['nome'] ?? null;
-        $this->email = $_REQUEST['email'] ?? null;
-        $this->idade = $_REQUEST['idade'] ?? null;
+        $json = file_get_contents("php://input");
+        $data = json_decode($json);
 
-        // die(var_export($_SERVER['REQUEST_METHOD']));
-        // die(var_export($_REQUEST));
-        if ($this->metodo != 'DELETE' && !isset($this->acao)) {
+        if ($data) {
+            $this->acao = $data->acao ?? null;
+            $this->id = $data->id ?? null;
+            $this->nome = $data->nome ?? null;
+            $this->email = $data->email ?? null;
+            $this->idade = $data->idade ?? null;
+        }
+
+        if ($this->metodo == 'POST' && !isset($this->acao)) {
             throw new Exception('Ação não informada!', 400);
         }
 
@@ -261,11 +264,8 @@ class API
     }
 }
 
-// Inicializa a API
 $api = new API();
 
-//die(var_export($_POST));
-// Verifica o método de requisição
 switch ($api->metodo) {
     case 'DELETE':
         echo isset($_REQUEST['id']) ? $api->removerUsuario() : "ID não informado!";
@@ -275,11 +275,11 @@ switch ($api->metodo) {
         echo $api->alterarUsuario();
         break;
     case 'POST':
-        if (!isset($_POST['acao'])) {
+        if (!$api->acao) {
             echo "Ação não informada!";
             break;
         } else {
-            switch ($_POST['acao']) {
+            switch ($api->acao) {
                 case 'criar':
                     echo $api->criarUsuario();
                     break;

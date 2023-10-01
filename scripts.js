@@ -1,11 +1,14 @@
 function buscaTodosOsUsuarios() {
     try {
+        const data = {
+            acao: "buscar"
+        };
+
         $.ajax({
             type: "POST",
             url: "api.php",
-            data: {
-                acao: "buscar"
-            },
+            data: JSON.stringify(data),
+            contentType: "application/json",
             dataType: "json",
             success: function (response) {
                 const usuarios = response.resultado;
@@ -50,13 +53,15 @@ function buscaTodosOsUsuarios() {
 function buscaUsuarioPorId() {
     try {
         const id = $("#id").val();
+        const data = {
+            acao: "buscarPorId",
+            id: id
+        };
         $.ajax({
             type: "POST",
             url: "api.php",
-            data: {
-                acao: "buscarPorId",
-                id: id
-            },
+            data: JSON.stringify(data),
+            contentType: "application/json",
             dataType: "json",
             success: function (response) {
                 const usuario = response.resultado;
@@ -77,13 +82,15 @@ function buscaUsuarioPorId() {
 function buscaUsuarioPorEmail(callback) {
     try {
         const email = $("#email").val();
+        const data = {
+            acao: "buscarPorEmail",
+            email: email
+        };
         $.ajax({
             type: "POST",
             url: "api.php",
-            data: {
-                acao: "buscarPorEmail",
-                email: email
-            },
+            data: JSON.stringify(data),
+            contentType: "application/json",
             dataType: "json",
             success: function (response) {
                 const usuario = response.resultado;
@@ -113,15 +120,17 @@ function criaUsuario() {
         const idade = $("#idade").val();
         const email = $("#email").val();
         console.log(nome, idade, email);
+        const data = {
+            acao: "criar",
+            nome: nome,
+            idade: idade,
+            email: email
+        };
         $.ajax({
             type: "POST",
             url: "api.php",
-            data: {
-                acao: "criar",
-                nome: nome,
-                idade: idade,
-                email: email
-            },
+            data: JSON.stringify(data),
+            contentType: "application/json",
             dataType: 'json',
             success: function (response) {
                 const usuarioCriado = response.resultado;
@@ -165,17 +174,18 @@ function alteraUsuario() {
         const nome = $("#nome").val();
         const idade = $("#idade").val();
         const email = $("#email").val();
+        const data = {
+            id: id,
+            nome: nome,
+            idade: idade,
+            email: email
+        };
 
         $.ajax({
             type: "PATCH",
             url: "api.php",
-            data: {
-                acao: "alterar",
-                id: id,
-                nome: nome,
-                idade: idade,
-                email: email
-            },
+            data: JSON.stringify(data),
+            contentType: "application/json",
             dataType: "json",
             success: function (response) {
                 console.warn(response.resultado);
@@ -194,10 +204,16 @@ function removeUsuario(el) {
     try {
         const row = $(el).closest("tr");
         const id = row.find("td:eq(0)").text();
+        const data = {
+            id: id
+        };
 
         $.ajax({
             type: "DELETE",
-            url: `api.php?id=${id}`,
+            url: "api.php",
+            data: JSON.stringify(data),
+            contentType: "application/json",
+            dataType: "json",
             success: function (response) {
                 console.warn(response.resultado);
                 window.location.reload();
