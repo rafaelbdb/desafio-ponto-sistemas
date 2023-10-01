@@ -100,6 +100,8 @@ OBS: ENVIAR UM BREVE TUTORIAL DE COMO INSTALAR / UTILIZAR A APLICAÇÃO
     $ docker-compose down --remove-orphans && clear && docker-compose up
     ```
 
+-   Na pasta 'banco' há um sql para recriar o banco e a tabela + triggers, e também um backup com alguns exemplos. Podem ser restaurados com o PgAdmin4.
+
 -   Abrir o projeto no navegador em 'http://localhost:8080'
 
 > Foram cerca de 100hs de trabalho no total
