@@ -60,3 +60,10 @@ OBS: ENVIAR UM BREVE TUTORIAL DE COMO INSTALAR / UTILIZAR A APLICAÇÃO
 -> Backend
 - Java
 - Php
+
+---
+## Para rodar:
+- Necessário ter instalado o Docker e Docker-compose
+- Rodar o docker-compose.yaml
+- Abrir o projeto no navegador em 'http://localhost:8080'
+- Foram cerca de 48hs de trabalho total
