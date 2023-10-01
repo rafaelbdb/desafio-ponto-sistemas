@@ -3,10 +3,10 @@ FROM php:8.2-cli
 RUN apt-get update && apt-get install -y libpq-dev vim \
     && docker-php-ext-install pdo pdo_pgsql
 
-#RUN docker-php-ext-configure pgsql -with-pgsql=/usr/local/pgsql
-
-RUN echo "extension=pgsql" >> /usr/local/etc/php/php.ini-development
-RUN echo "extension=pdo_pgsql" >> /usr/local/etc/php/php.ini-development
+RUN apt-get install -y php-dev autoconf automake
+RUN pecl install xdebug-3.2.2
+RUN docker-php-ext-enable xdebug
+RUN echo "zend_extension=xdebug" >> /usr/local/etc/php/conf.d/99-xdebug.ini
 
 WORKDIR /var/www/html
 
