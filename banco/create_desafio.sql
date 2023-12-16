@@ -1,6 +1,6 @@
 -- Database: desafio
 
--- DROP DATABASE IF EXISTS desafio;
+DROP DATABASE IF EXISTS desafio;
 
 CREATE DATABASE desafio
     WITH
@@ -15,7 +15,9 @@ CREATE DATABASE desafio
 
 -- Table: public.usuarios
 
--- DROP TABLE IF EXISTS public.usuarios;
+DROP TABLE IF EXISTS public.usuarios;
+
+CREATE SEQUENCE IF NOT EXISTS usuarios_id_seq;
 
 CREATE TABLE IF NOT EXISTS public.usuarios
 (
@@ -36,7 +38,15 @@ ALTER TABLE IF EXISTS public.usuarios
 
 -- Trigger: atualizar_alterado_em_trigger
 
--- DROP TRIGGER IF EXISTS atualizar_alterado_em_trigger ON public.usuarios;
+DROP TRIGGER IF EXISTS atualizar_alterado_em_trigger ON public.usuarios;
+
+CREATE OR REPLACE FUNCTION public.atualiza_alterado_em()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.alterado_em = NOW();
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE TRIGGER atualizar_alterado_em_trigger
     BEFORE UPDATE 
