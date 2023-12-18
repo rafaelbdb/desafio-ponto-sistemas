@@ -1,24 +1,27 @@
 version: '3.7'
 
 services:
-  web:
+  php8:
     build:
       context: .
-      dockerfile: Dockerfile.web
+      dockerfile: Dockerfile.php8
     container_name: desafio-php8-container
     volumes:
       - .:/var/www/html
+      - "/tmp/xdebug:/tmp/xdebug"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     ports:
       - "8080:80"
     networks:
       - brjnet
     depends_on:
-      - db
+      - psql15
 
-  db:
+  psql15:
     build:
       context: .
-      dockerfile: Dockerfile.db
+      dockerfile: Dockerfile.psql15
     container_name: desafio-psql15-container
     volumes:
       - /media/borjovsky/workspace/psql-data:/var/lib/postgresql/data
@@ -47,7 +50,7 @@ services:
     networks:
       - brjnet
     depends_on:
-      - db
+      - psql15
 
 networks:
   brjnet:

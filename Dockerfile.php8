@@ -1,0 +1,25 @@
+FROM php:8.3-cli
+
+RUN apt-get update && apt-get install -y libpq-dev vim \
+    && docker-php-ext-install pdo pdo_pgsql
+
+RUN pecl install xdebug-3.3.0
+RUN docker-php-ext-enable xdebug
+
+COPY docker/php/conf.d/ /usr/local/etc/php/conf.d/
+
+RUN echo $" \n\
+[xdebug] \n\
+zend_extension=xdebug \n\
+xdebug.mode=debug,develop \n\
+xdebug.start_with_request=yes \n\
+xdebug.remote_enable=1 \n\
+xdebug.remote_port=9003 \n\
+xdebug.cli_color=1 \n\
+" | tee -a /usr/local/etc/php/php.ini-development /usr/local/etc/php/php.ini-production
+
+WORKDIR /var/www/html
+
+EXPOSE 80
+
+CMD ["php", "-S", "0.0.0.0:80", "-t", "/var/www/html"]
